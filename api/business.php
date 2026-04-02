@@ -20,13 +20,13 @@ switch ($action) {
         getBusiness($conn, $id);
         break;
     case 'create':
-        createBusiness($conn);
+        createBusiness($conn, $method);
         break;
     case 'update':
-        updateBusiness($conn, $id);
+        updateBusiness($conn, $id, $method);
         break;
     case 'delete':
-        deleteBusiness($conn, $id);
+        deleteBusiness($conn, $id, $method);
         break;
     default:
         sendJsonResponse(['error' => 'Invalid action'], 400);
@@ -87,7 +87,7 @@ function getBusiness($conn, $id) {
 /**
  * Create new business
  */
-function createBusiness($conn) {
+function createBusiness($conn, $method) {
     if ($method !== 'POST') {
         sendJsonResponse(['error' => 'Method not allowed'], 405);
     }
@@ -130,7 +130,7 @@ function createBusiness($conn) {
 /**
  * Update existing business
  */
-function updateBusiness($conn, $id) {
+function updateBusiness($conn, $id, $method) {
     if ($method !== 'POST') {
         sendJsonResponse(['error' => 'Method not allowed'], 405);
     }
@@ -185,7 +185,7 @@ function updateBusiness($conn, $id) {
 /**
  * Delete business
  */
-function deleteBusiness($conn, $id) {
+function deleteBusiness($conn, $id, $method) {
     if ($method !== 'POST') {
         sendJsonResponse(['error' => 'Method not allowed'], 405);
     }

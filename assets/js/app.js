@@ -11,7 +11,8 @@ $(document).ready(function() {
     // Add Business button click
     $('#btnAddBusiness').click(function() {
         $('#addBusinessForm')[0].reset();
-        $('#addBusinessModal').modal('show');
+        const modal = new bootstrap.Modal(document.getElementById('addBusinessModal'));
+        modal.show();
     });
 
     // Add Business form submit
@@ -49,7 +50,8 @@ $(document).ready(function() {
         const name = $(this).data('name');
         $('#deleteId').val(id);
         $('#deleteBusinessName').text(name);
-        $('#deleteConfirmModal').modal('show');
+        const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+        modal.show();
     });
 
     // Rating click on table (delegated)
@@ -197,7 +199,9 @@ function saveBusiness() {
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                $('#addBusinessModal').modal('hide');
+                const modalElement = document.getElementById('addBusinessModal');
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.hide();
                 $('#addBusinessForm')[0].reset();
                 addBusinessRow(response.data);
                 showAlert('success', 'Business added successfully!');
@@ -246,7 +250,8 @@ function loadBusinessForEdit(id) {
                 $('#editAddress').val(business.address);
                 $('#editPhone').val(business.phone);
                 $('#editEmail').val(business.email);
-                $('#editBusinessModal').modal('show');
+                const modal = new bootstrap.Modal(document.getElementById('editBusinessModal'));
+                modal.show();
             } else {
                 showAlert('danger', response.error || 'Failed to load business');
             }
@@ -268,13 +273,15 @@ function updateBusiness() {
     btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Updating...');
 
     $.ajax({
-        url: 'api/business.php?action/update&id=' + id,
+        url: 'api/business.php?action=update&id=' + id,
         type: 'POST',
         data: formData,
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                $('#editBusinessModal').modal('hide');
+                const modalElement = document.getElementById('editBusinessModal');
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.hide();
                 updateBusinessRow(response.data);
                 showAlert('success', 'Business updated successfully!');
             } else {
@@ -319,7 +326,9 @@ function deleteBusiness() {
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                $('#deleteConfirmModal').modal('hide');
+                const modalElement = document.getElementById('deleteConfirmModal');
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.hide();
                 row.fadeOut(300, function() {
                     $(this).remove();
                     if ($('#businessTableBody tr').length === 0) {
@@ -356,7 +365,8 @@ function openRatingModal(businessId, businessName) {
     $('#ratingForm')[0].reset();
     $('#ratingStars').raty('score', 0);
     $('#ratingValue').val(0);
-    $('#ratingModal').modal('show');
+    const modal = new bootstrap.Modal(document.getElementById('ratingModal'));
+    modal.show();
 }
 
 /**
@@ -381,7 +391,9 @@ function submitRating() {
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                $('#ratingModal').modal('hide');
+                const modalElement = document.getElementById('ratingModal');
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.hide();
                 updateRowRaty(businessId, response.avg_rating);
                 showAlert('success', response.message + (response.action === 'updated' ? ' (Rating updated)' : ''));
             } else {

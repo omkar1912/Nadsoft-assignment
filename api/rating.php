@@ -14,7 +14,7 @@ $conn = getConnection();
 
 switch ($action) {
     case 'submit':
-        submitRating($conn, $businessId);
+        submitRating($conn, $businessId, $method);
         break;
     case 'get':
         getRatings($conn, $businessId);
@@ -31,7 +31,7 @@ $conn->close();
 /**
  * Submit or update rating for a business
  */
-function submitRating($conn, $businessId) {
+function submitRating($conn, $businessId, $method) {
     if ($method !== 'POST') {
         sendJsonResponse(['error' => 'Method not allowed'], 405);
     }
