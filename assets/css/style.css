@@ -1,0 +1,139 @@
+/**
+ * Business Listing & Rating System
+ * Custom Styles
+ */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.btn-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin: 0 2px;
+}
+
+.rating-cell {
+    min-width: 130px;
+}
+
+.rating-cell .rating-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rating-cell .rating-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.raty-star {
+    cursor: pointer !important;
+}
+
+.modal-header {
+    border-bottom: 2px solid #e9ecef;
+}
+
+.modal-footer {
+    border-top: 2px solid #e9ecef;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+#ratingStars {
+    font-size: 2rem;
+}
+
+.table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+h1.h3 {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+hr {
+    border-top: 2px solid #e9ecef;
+    opacity: 0.75;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0a58ca 0%, #084298 100%);
+}
+
+.btn-warning {
+    color: #fff;
+}
+
+.btn-warning:hover {
+    color: #fff;
+}
+
+.bi-star-fill.text-warning {
+    color: #ffc107 !important;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.alert-dismissible {
+    border-radius: 8px;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
