@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Rating API Endpoint
  * Handles rating operations for businesses
@@ -31,32 +32,33 @@ $conn->close();
 /**
  * Submit or update rating for a business
  */
-function submitRating($conn, $businessId, $method) {
+function submitRating($conn, $businessId, $method)
+{
     if ($method !== 'POST') {
         sendJsonResponse(['error' => 'Method not allowed'], 405);
     }
-    
+
     if ($businessId <= 0) {
         sendJsonResponse(['error' => 'Invalid business ID'], 400);
     }
-    
+
     $name = sanitize($_POST['name'] ?? '');
     $email = sanitize($_POST['email'] ?? '');
     $phone = sanitize($_POST['phone'] ?? '');
     $rating = isset($_POST['rating']) ? (float)$_POST['rating'] : 0;
-    
+
     if (empty($name) || empty($email) || empty($phone)) {
         sendJsonResponse(['error' => 'Name, email, and phone are required'], 400);
     }
-    
+
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         sendJsonResponse(['error' => 'Invalid email format'], 400);
     }
-    
+
     if ($rating < 0 || $rating > 5) {
         sendJsonResponse(['error' => 'Rating must be between 0 and 5'], 400);
     }
-    
+
     $check = $conn->prepare("SELECT id FROM businesses WHERE id = ?");
     $check->bind_param("i", $businessId);
     $check->execute();
@@ -64,26 +66,27 @@ function submitRating($conn, $businessId, $method) {
         sendJsonResponse(['error' => 'Business not found'], 404);
     }
     $check->close();
-    
+
     $stmt = $conn->prepare("SELECT id FROM ratings WHERE business_id = ? AND (email = ? OR phone = ?)");
     $stmt->bind_param("iss", $businessId, $email, $phone);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($result->num_rows > 0) {
         $existing = $result->fetch_assoc();
         $stmt->close();
-        
+
         $stmt = $conn->prepare("UPDATE ratings SET name = ?, email = ?, phone = ?, rating = ? WHERE id = ?");
         $stmt->bind_param("sssdi", $name, $email, $phone, $rating, $existing['id']);
-        
+
         if ($stmt->execute()) {
             $stmt->close();
-            $avgRating = calculateAverageRating($conn, $businessId);
+            $ratingInfo = calculateAverageRating($conn, $businessId);
             sendJsonResponse([
                 'success' => true,
                 'message' => 'Rating updated successfully',
-                'avg_rating' => $avgRating,
+                'avg_rating' => $ratingInfo['avg_rating'],
+                'total_ratings' => $ratingInfo['total_ratings'],
                 'action' => 'updated'
             ]);
         } else {
@@ -91,17 +94,18 @@ function submitRating($conn, $businessId, $method) {
         }
     } else {
         $stmt->close();
-        
+
         $stmt = $conn->prepare("INSERT INTO ratings (business_id, name, email, phone, rating) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("isssd", $businessId, $name, $email, $phone, $rating);
-        
+
         if ($stmt->execute()) {
             $stmt->close();
-            $avgRating = calculateAverageRating($conn, $businessId);
+            $ratingInfo = calculateAverageRating($conn, $businessId);
             sendJsonResponse([
                 'success' => true,
                 'message' => 'Rating submitted successfully',
-                'avg_rating' => $avgRating,
+                'avg_rating' => $ratingInfo['avg_rating'],
+                'total_ratings' => $ratingInfo['total_ratings'],
                 'action' => 'inserted'
             ]);
         } else {
@@ -113,47 +117,57 @@ function submitRating($conn, $businessId, $method) {
 /**
  * Get all ratings for a business
  */
-function getRatings($conn, $businessId) {
+function getRatings($conn, $businessId)
+{
     if ($businessId <= 0) {
         sendJsonResponse(['error' => 'Invalid business ID'], 400);
     }
-    
+
     $stmt = $conn->prepare("SELECT * FROM ratings WHERE business_id = ? ORDER BY created_at DESC");
     $stmt->bind_param("i", $businessId);
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     $ratings = [];
     while ($row = $result->fetch_assoc()) {
         $ratings[] = $row;
     }
     $stmt->close();
-    
+
     sendJsonResponse(['success' => true, 'data' => $ratings]);
 }
 
 /**
  * Get average rating for a business
  */
-function getAverageRating($conn, $businessId) {
+function getAverageRating($conn, $businessId)
+{
     if ($businessId <= 0) {
         sendJsonResponse(['error' => 'Invalid business ID'], 400);
     }
-    
-    $avgRating = calculateAverageRating($conn, $businessId);
-    sendJsonResponse(['success' => true, 'avg_rating' => $avgRating]);
+
+    $ratingInfo = calculateAverageRating($conn, $businessId);
+    sendJsonResponse([
+        'success' => true,
+        'avg_rating' => $ratingInfo['avg_rating'],
+        'total_ratings' => $ratingInfo['total_ratings']
+    ]);
 }
 
 /**
  * Calculate average rating for a business
  */
-function calculateAverageRating($conn, $businessId) {
-    $stmt = $conn->prepare("SELECT COALESCE(AVG(rating), 0) as avg_rating FROM ratings WHERE business_id = ?");
+function calculateAverageRating($conn, $businessId)
+{
+    $stmt = $conn->prepare("SELECT COALESCE(AVG(rating), 0) as avg_rating, COUNT(id) as total_ratings FROM ratings WHERE business_id = ?");
     $stmt->bind_param("i", $businessId);
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
     $stmt->close();
-    
-    return round((float)$row['avg_rating'], 1);
+
+    return [
+        'avg_rating' => round((float)$row['avg_rating'], 1),
+        'total_ratings' => (int)$row['total_ratings']
+    ];
 }

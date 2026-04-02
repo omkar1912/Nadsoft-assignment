@@ -47,7 +47,16 @@ body {
 .rating-cell .rating-text {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #6c757d;
+    color: #212529;
+}
+
+.rating-count {
+    font-size: 0.75rem;
+}
+
+.row-highlight {
+    background-color: #fff3cd !important;
+    transition: background-color 0.5s ease-in-out;
 }
 
 .raty-star {
@@ -72,8 +81,16 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
 }
 
+.raty-star img, 
+#ratingStars img {
+    display: none !important;
+}
+
 #ratingStars {
     font-size: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
 }
 
 .table-responsive {

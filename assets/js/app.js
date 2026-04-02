@@ -6,7 +6,6 @@
 $(document).ready(function() {
     // Initialize application
     loadBusinesses();
-    initRatingStars();
 
     // Add Business button click
     $('#btnAddBusiness').click(function() {
@@ -66,18 +65,26 @@ $(document).ready(function() {
  * Initialize Raty stars in rating modal
  */
 function initRatingStars() {
-    $('#ratingStars').raty({
+    const starContainer = $('#ratingStars');
+    // Completely clear the container and remove any previous raty data
+    starContainer.removeData('raty').empty();
+    
+    starContainer.raty({
+        number: 5,
         score: 0,
         half: true,
-        halfShow: true,
         starType: 'i',
-        starOff: 'bi bi-star fs-4 text-muted',
-        starOn: 'bi bi-star-fill fs-4 text-warning',
-        starHalf: 'bi bi-star-half fs-4 text-warning',
+        path: '',
+        starOff: 'bi bi-star text-muted',
+        starOn: 'bi bi-star-fill text-warning',
+        starHalf: 'bi bi-star-half text-warning',
         click: function(score) {
-            $('#ratingValue').val(score);
+            $('#ratingValue').val(score || 0);
         }
     });
+    
+    // Force hide any images that Raty might have accidentally created
+    starContainer.find('img').hide();
 }
 
 /**
@@ -131,6 +138,7 @@ function renderBusinessTable(businesses) {
  * Create a table row for a business
  */
 function createBusinessRow(business) {
+    const totalRatings = business.total_ratings || 0;
     return `
         <tr id="business-row-${business.id}" class="fade-in">
             <td>${business.id}</td>
@@ -150,6 +158,7 @@ function createBusinessRow(business) {
                 <div class="rating-container">
                     <div id="raty-${business.id}" class="raty-star" data-score="${business.avg_rating}" data-business-id="${business.id}"></div>
                     <span class="rating-text" id="rating-text-${business.id}">${business.avg_rating}</span>
+                    <span class="rating-count text-muted" id="rating-count-${business.id}">(${totalRatings})</span>
                 </div>
             </td>
         </tr>
@@ -160,27 +169,56 @@ function createBusinessRow(business) {
  * Initialize Raty for a table row
  */
 function initRowRaty(businessId, avgRating) {
-    $(`#raty-${businessId}`).raty({
-        score: avgRating,
+    const starContainer = $(`#raty-${businessId}`);
+    if (!starContainer.length) return;
+    
+    // Completely clear any previous instance and HTML
+    starContainer.removeData('raty').empty();
+    
+    const numericScore = parseFloat(avgRating) || 0;
+    
+    starContainer.raty({
+        number: 5,
+        score: numericScore,
         readOnly: true,
         half: true,
-        halfShow: true,
         starType: 'i',
+        path: '',
         starOff: 'bi bi-star text-muted',
         starOn: 'bi bi-star-fill text-warning',
-        starHalf: 'bi bi-star-half text-warning',
-        click: function(score) {
-            openRatingModal(businessId, $(`#business-row-${businessId} td:nth-child(2)`).text());
-        }
+        starHalf: 'bi bi-star-half text-warning'
     });
+    
+    // Safety check to hide images
+    starContainer.find('img').hide();
 }
 
 /**
  * Update Raty score for a business row
  */
-function updateRowRaty(businessId, avgRating) {
-    $(`#raty-${businessId}`).raty('score', avgRating);
+function updateRowRaty(businessId, avgRating, totalRatings) {
+    const numericRating = parseFloat(avgRating) || 0;
+    
+    // Update numeric text and count immediately
     $(`#rating-text-${businessId}`).text(avgRating);
+    if (totalRatings !== undefined) {
+        $(`#rating-count-${businessId}`).text(`(${totalRatings})`);
+    }
+
+    // Small delay to ensure the modal closing doesn't interfere with the DOM update
+    setTimeout(function() {
+        const starContainer = $(`#raty-${businessId}`);
+        if (starContainer.length) {
+            initRowRaty(businessId, numericRating);
+            
+            // Add highlight effect
+            const row = $(`#business-row-${businessId}`);
+            row.addClass('row-highlight');
+            setTimeout(() => {
+                row.removeClass('row-highlight');
+            }, 2000);
+        }
+    }, 100);
 }
 
 /**
@@ -363,7 +401,7 @@ function openRatingModal(businessId, businessName) {
     $('#ratingBusinessId').val(businessId);
     $('#ratingBusinessName').text(businessName);
     $('#ratingForm')[0].reset();
-    $('#ratingStars').raty('score', 0);
+    initRatingStars(); // Re-initialize to ensure clean state and correct rendering
     $('#ratingValue').val(0);
     const modal = new bootstrap.Modal(document.getElementById('ratingModal'));
     modal.show();
@@ -394,7 +432,7 @@ function submitRating() {
                 const modalElement = document.getElementById('ratingModal');
                 const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                 modal.hide();
-                updateRowRaty(businessId, response.avg_rating);
+                updateRowRaty(businessId, response.avg_rating, response.total_ratings);
                 showAlert('success', response.message + (response.action === 'updated' ? ' (Rating updated)' : ''));
             } else {
                 showAlert('danger', response.error || 'Failed to submit rating');
