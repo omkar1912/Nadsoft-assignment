@@ -188,9 +188,6 @@ function initRowRaty(businessId, avgRating) {
         starOn: 'bi bi-star-fill text-warning',
         starHalf: 'bi bi-star-half text-warning'
     });
-    
-    // Safety check to hide images
-    starContainer.find('img').hide();
 }
 
 /**
@@ -198,27 +195,29 @@ function initRowRaty(businessId, avgRating) {
  */
 function updateRowRaty(businessId, avgRating, totalRatings) {
     const numericRating = parseFloat(avgRating) || 0;
-    
-    // Update numeric text and count immediately
-    $(`#rating-text-${businessId}`).text(avgRating);
-    if (totalRatings !== undefined) {
-        $(`#rating-count-${businessId}`).text(`(${totalRatings})`);
-    }
 
-    // Small delay to ensure the modal closing doesn't interfere with the DOM update
-    setTimeout(function() {
-        const starContainer = $(`#raty-${businessId}`);
-        if (starContainer.length) {
-            initRowRaty(businessId, numericRating);
-            
-            // Add highlight effect
-            const row = $(`#business-row-${businessId}`);
-            row.addClass('row-highlight');
-            setTimeout(() => {
-                row.removeClass('row-highlight');
-            }, 2000);
-        }
-    }, 100);
+    const newElement = $(`
+        <div id="raty-${businessId}" 
+             class="raty-star" 
+             data-score="${numericRating}" 
+             data-business-id="${businessId}">
+        </div>
+    `);
+
+    // 🔥 Replace entire element (this is the real fix)
+    $(`#raty-${businessId}`).replaceWith(newElement);
+
+    // 🔥 Fresh initialization (clean state guaranteed)
+    initRowRaty(businessId, numericRating);
+
+    // Update text
+    $(`#rating-text-${businessId}`).text(numericRating);
+    $(`#rating-count-${businessId}`).text(`(${totalRatings})`);
+
+    // Highlight
+    const row = $(`#business-row-${businessId}`);
+    row.addClass('row-highlight');
+    setTimeout(() => row.removeClass('row-highlight'), 2000);
 }
 
 /**
@@ -429,11 +428,21 @@ function submitRating() {
         dataType: 'json',
         success: function(response) {
             if (response.success) {
+                // Update the rating immediately without waiting for modal to close
+                updateRowRaty(businessId, response.avg_rating, response.total_ratings);
+                console.log('Rating updated successfully!');
+                console.log(response);
+                
                 const modalElement = document.getElementById('ratingModal');
                 const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
                 modal.hide();
-                updateRowRaty(businessId, response.avg_rating, response.total_ratings);
                 showAlert('success', response.message + (response.action === 'updated' ? ' (Rating updated)' : ''));
+
+                const ratingElement = document.getElementById('raty-'+businessId);
+
+                //ratingElement.setAttribute('data-score', response.avg_rating);
+
+                console.log(ratingElement);
             } else {
                 showAlert('danger', response.error || 'Failed to submit rating');
             }

@@ -81,8 +81,10 @@
                             <textarea class="form-control" id="addAddress" name="address" rows="2" required></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="addPhone" class="form-label">Phone <span class="text-danger">*</span></label>
-                            <input type="tel" class="form-control" id="addPhone" name="phone" required>
+                            <label for="addPhone" class="form-label">Phone <span class="text-danger">*</span>
+                            <i class="text-muted"> Enter 10 digits</i>
+                        </label>
+                            <input type="tel" class="form-control" id="addPhone" name="phone" maxlength="10" pattern="[0-9]{10}"  required>
                         </div>
                         <div class="mb-3">
                             <label for="addEmail" class="form-label">Email <span class="text-danger">*</span></label>

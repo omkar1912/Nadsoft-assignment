@@ -86,11 +86,27 @@ body {
     display: none !important;
 }
 
+.raty-star i, 
+#ratingStars i {
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-right: 2px;
+}
+
+#ratingStars i {
+    font-size: 2.5rem;
+}
+
+.bi-star-fill.text-warning,
+.bi-star-half.text-warning {
+    color: #ffc107 !important;
+}
+
 #ratingStars {
-    font-size: 2rem;
     display: flex;
     justify-content: center;
-    gap: 5px;
+    gap: 8px;
+    padding: 10px 0;
 }
 
 .table-responsive {
